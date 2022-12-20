@@ -1,8 +1,9 @@
 # Overview 
 
-- initial implementation, fork from -> github.com/yawning/sphincs256 
-- migrated to an fast blake3-512 hypertree 
-- migrated from c-style to modern golang inline-able one-pkg design
+[paepche.de/sphincs](https://paepcke.de/sphincs)
+
+- forked from -> [github.com/yawning/sphincs256](https://github.com/yawning/sphincs256) [BSD3]
+- implements a blake3-512 based hypertree
 
 [sphincs](http://sphincs.cr.yp.to/sphincs-20141001.pdf) 26pp. (PDF)
 Daniel J. Bernstein, Daira Hopwood, Andreas Hülsing, Tanja Lange,
