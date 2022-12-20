@@ -1,6 +1,10 @@
+// package sphincs ...
 package sphincs
 
-import "paepcke.de/lib/blake3"
+// import 
+import (
+	"github.com/zeebo/blake3"
+)
 
 const (
 	hashSize = 32
