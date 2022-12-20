@@ -6,7 +6,7 @@ import (
 	"crypto/subtle"
 	"encoding/binary"
 
-	"paepcke.de/lib/blake3"
+	"github.com/zeebo/blake3"
 )
 
 // const
