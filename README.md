@@ -11,3 +11,6 @@ Ruben Niederhagen, Louiza Papachristodoulou, Peter Schwabe,
 Zooko Wilcox-O'Hearn. SPHINCS: practical stateless hash-based signatures.
 Date: 2014.10.01.
 
+# CONTRIBUTION
+
+Yes, Please! PRs Welcome! 
