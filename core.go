@@ -1,10 +1,7 @@
-// package sphincs
 package sphincs
 
-// import
 import "encoding/binary"
 
-// const
 const (
 	// nMasks has to be the max of (2*(subtreeHeight+wotsLogL)) and (wotsW-1) and 2*horstLogT
 	nMasks               = 2 * horstLogT

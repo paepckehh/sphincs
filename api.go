@@ -1,7 +1,6 @@
 // Package sphincs provides hashbased hypertree post-quantum secure signatures
 package sphincs
 
-// import
 import (
 	"crypto/subtle"
 	"encoding/binary"
@@ -9,7 +8,6 @@ import (
 	"github.com/zeebo/blake3"
 )
 
-// const
 const (
 	// PublicKeySize is the length of a SPHINCS-256 public key in bytes.
 	PublicKeySize = (nMasks + 1) * hashSize

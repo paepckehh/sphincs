@@ -1,7 +1,5 @@
-// package sphincs ...
 package sphincs
 
-// import
 import (
 	"github.com/zeebo/blake3"
 )
