@@ -1,6 +1,6 @@
 # Overview 
 
-[paepche.de/sphincs](https://paepcke.de/sphincs)
+[paepche.de/sphincs](https://paepcke.de/sphincs/)
 
 - forked from -> [github.com/yawning/sphincs256](https://github.com/yawning/sphincs256) [BSD3]
 - implements a blake3-512 based hypertree
