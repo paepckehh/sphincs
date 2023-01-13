@@ -22,7 +22,11 @@ Special thanks goes to:
 
 [pkg.go.dev/paepcke.de/sphincs](https://pkg.go.dev/paepcke.de/sphincs)
 
+# Similar Projects
+
+* C, Reference, sphincs+(full:sha2/shake/haraka) [github.com/sphincs/sphincsplus] (https://github.com/sphincs/sphincsplus)
+* C++, sphincs+(sha3/shake128/sponge) [github.com/itzmeanjan/sphincs] (https://github.com/itzmeanjan/sphincs) 
+
 # CONTRIBUTION
 
 Yes, Please! PRs Welcome! 
-https://github.com/itzmeanjan/sphincs
