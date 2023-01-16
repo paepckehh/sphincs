@@ -1,4 +1,5 @@
 # Overview 
+[![Go Report Card](https://goreportcard.com/badge/paepcke.de/sphincs)](https://goreportcard.com/report/paepcke.de/sphincs)
 
 [paepche.de/sphincs](https://paepcke.de/sphincs/)
 
