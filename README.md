@@ -1,5 +1,5 @@
 # Overview 
-[![Go Report Card](https://goreportcard.com/badge/paepcke.de/sphincs)](https://goreportcard.com/report/paepcke.de/sphincs)
+[![Go Reference](https://pkg.go.dev/badge/paepcke.de/sphincs.svg)](https://pkg.go.dev/paepcke.de/sphincs) i[![Go Report Card](https://goreportcard.com/badge/paepcke.de/sphincs)](https://goreportcard.com/report/paepcke.de/sphincs)
 
 [paepche.de/sphincs](https://paepcke.de/sphincs/)
 
