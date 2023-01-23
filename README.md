@@ -6,6 +6,7 @@
 
 - forked from -> [github.com/yawning/sphincs256](https://github.com/yawning/sphincs256) [BSD3]
 - implements a blake3-512 based hypertree
+- experimental project
 
 # EXTERNAL RESOURCES 
 
