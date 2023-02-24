@@ -2,7 +2,7 @@
 [![Go Reference](https://pkg.go.dev/badge/paepcke.de/sphincs.svg)](https://pkg.go.dev/paepcke.de/sphincs) [![Go Report Card](https://goreportcard.com/badge/paepcke.de/sphincs)](https://goreportcard.com/report/paepcke.de/sphincs) [![Go Build](https://github.com/paepckehh/sphincs/actions/workflows/golang.yml/badge.svg)](https://github.com/paepckehh/sphincs/actions/workflows/golang.yml)
 # Overview 
 
-[paepche.de/sphincs](https://paepcke.de/sphincs/)
+[paepcke.de/sphincs](https://paepcke.de/sphincs/)
 
 - forked from -> [github.com/yawning/sphincs256](https://github.com/yawning/sphincs256) [BSD3]
 - implements a blake3-512 based hypertree
