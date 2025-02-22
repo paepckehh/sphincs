@@ -1,5 +1,8 @@
 PROJECT=$(shell basename $(CURDIR))
 
+all:
+	go build
+
 deps: 
 	rm go.mod go.sum
 	go mod init paepcke.de/$(PROJECT)
