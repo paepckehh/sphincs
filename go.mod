@@ -1,6 +1,6 @@
 module paepcke.de/sphincs
 
-go 1.23.5
+go 1.24.1
 
 require github.com/zeebo/blake3 v0.2.4
 
