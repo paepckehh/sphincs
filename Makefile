@@ -1,7 +1,12 @@
 PROJECT=$(shell basename $(CURDIR))
 
-all:
-	go build
+info:
+	echo $(PROJECT)
+
+all: info
+
+build:
+	go build -v 
 
 deps: 
 	rm go.mod go.sum
