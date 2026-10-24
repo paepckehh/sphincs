@@ -25,7 +25,7 @@ with a three-function API: `GenerateKey`, `Sign`, `Verify`.
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/established-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="docs/established-light.svg">
-  <img src="docs/established-light.svg" alt="sphincs: established in 2022, 26+ tagged releases, continuous development" width="100%">
+  <img src="docs/established-light.svg" alt="sphincs: established in 2022, 4+ years and 28+ tagged releases of continuous development" width="100%">
 </picture>
 
 </div>
@@ -56,6 +56,116 @@ BLAKE3 and a compact ChaCha permutation.
 > research, tooling, and interoperability experiments. It is not audited and
 > it is not wire-compatible with SPHINCS+. Do not deploy it as the only
 > signature scheme protecting production secrets without an independent review.
+
+## 🏛️ NIST post-quantum status
+
+Current as of **October 2026**. `sphincs` predates the NIST standard and is not
+SLH-DSA, but the surrounding decisions define when and how hash-based signatures
+are deployed. This section tracks the normative documents and what they mean for
+this package.
+
+### SPHINCS+ became SLH-DSA
+
+NIST selected SPHINCS+ for standardization in 2022 and published **FIPS 205,
+Stateless Hash-Based Digital Signature Standard**, on **13 August 2024**,
+together with FIPS 203 (ML-KEM) and FIPS 204 (ML-DSA). FIPS 205 is the
+normative definition of **SLH-DSA**: 12 parameter sets (SHA-2 and SHAKE, NIST
+security categories 1, 3, and 5, small and fast variants), pure and pre-hash
+modes, and a signing randomizer. NIST's guidance is that the three standards
+can and should be used now.
+
+SLH-DSA is a different construction from this repository. It uses a different
+hypertree and leaf layout, SHA-2 or SHAKE instead of BLAKE3 and the ChaCha
+permutation, and randomized signing. Keys and signatures produced here will not
+verify against an SLH-DSA implementation, and vice versa.
+
+### 2026: parameter sets for constrained signing
+
+On **13 April 2026** NIST published the initial public draft of **SP 800-230,
+Additional SLH-DSA Parameter Sets for Limited Signature Use Cases**. It adds six
+parameter sets for security categories 1, 3, and 5 tuned for fast verification
+and smaller signatures, by capping each key at **2^24 signatures**. They target
+software, firmware, and certificate signing and are explicitly not approved for
+general-purpose use. The comment period closed on 12 June 2026; the received
+comments were posted on 1 July 2026.
+
+### The additional-signature track
+
+NIST's separate call for additional signature schemes, beyond the FIPS 204/205
+baseline, is still running:
+
+- **NIST IR 8528** (24 October 2024) advanced 14 of 40 first-round submissions
+  to round 2.
+- **NIST IR 8610** (14 May 2026) advanced nine candidates to round 3: FAEST,
+  HAWK, MAYO, MQOM, QR-UOV, SDitH, SNOVA, SQIsign, and UOV. HAWK has since been
+  withdrawn by its team. Round 3 is expected to last about two years, with the
+  seventh NIST PQC standardization conference planned for 2027.
+- FN-DSA (FIPS 206, derived from Falcon) has still not been published.
+
+### Migration timeline
+
+**NIST IR 8547, Transition to Post-Quantum Cryptography Standards** (initial
+public draft, 12 November 2024) remains a draft, with no final version yet. It
+plans to deprecate quantum-vulnerable algorithms after 2030 and disallow them
+after 2035, with high-risk systems migrating earlier. On the key-establishment
+side, **HQC** was selected for standardization on 11 March 2025 (NIST IR 8545),
+alongside ML-KEM.
+
+### Policy and implementation signals
+
+- **NSA CNSA 2.0** (FAQ v2.1, December 2024) does **not** approve SLH-DSA for
+  National Security Systems. For firmware and software signing it allows the
+  stateful hash-based schemes LMS and XMSS from SP 800-208. General-purpose
+  signatures use ML-DSA-87. CNSA 2.0 sets 2025 to 2035 milestones, with new NSS
+  acquisitions required to be compliant from 1 January 2027.
+- **BSI TR-02102-1** (version 2026-01, 23 January 2026) lists SLH-DSA among the
+  recommended post-quantum signature schemes, next to ML-DSA and the stateful
+  hash-based schemes.
+- **OpenSSL 3.5.0** (8 April 2025) added SLH-DSA, ML-KEM, and ML-DSA, which puts
+  the standard in mainstream TLS and CMS tooling. BoringSSL, Botan, and liboqs
+  also ship SLH-DSA implementations.
+
+### Security research worth watching
+
+- **SLasH-DSA** (arXiv:2509.13048, September 2025, revised February 2026)
+  demonstrated the first software-only universal forgery against SLH-DSA, using
+  Rowhammer-induced faults against OpenSSL 3.5.1 for several parameter sets.
+  The scheme was not broken mathematically; the implementation was.
+- Follow-up work on fault countermeasures (for example ePrint 2026/759, April
+  2026) and on constant-time screening of PQC implementations (ePrint 2026/1418,
+  July 2026) focuses on the same lesson: hash-based signatures need hardened
+  implementations, not just sound parameters.
+
+### What this means for sphincs
+
+- **Not a drop-in standard.** If you need FIPS 205 conformance, interoperability,
+  or a validated module, use a maintained SLH-DSA implementation. This package
+  is a readable, self-contained hypertree implementation for research and
+  tooling.
+- **The design ideas still hold.** Stateless operation, deterministic
+  derivation, fixed-size keys, and a hash-only security base remain the reasons
+  hash-based signatures are the conservative post-quantum choice.
+- **Deterministic signing is a deliberate difference.** FIPS 205 feeds a
+  randomizer into signing; `sphincs` signs deterministically from the key and
+  message.
+- **No fault countermeasures.** The Rowhammer results are a reminder that
+  signature code running on shared hardware needs fault and side-channel
+  hardening that this library does not claim to provide.
+
+### Primary documents
+
+| Document | Title | Date | Status |
+| :--- | :--- | :--- | :--- |
+| [FIPS 205](https://csrc.nist.gov/pubs/fips/205/final) | Stateless Hash-Based Digital Signature Standard (SLH-DSA) | 13 Aug 2024 | Final |
+| [FIPS 204](https://csrc.nist.gov/pubs/fips/204/final) | Module-Lattice-Based Digital Signature Standard (ML-DSA) | 13 Aug 2024 | Final |
+| [FIPS 203](https://csrc.nist.gov/pubs/fips/203/final) | Module-Lattice-Based Key-Encapsulation Mechanism Standard (ML-KEM) | 13 Aug 2024 | Final |
+| [SP 800-230](https://csrc.nist.gov/pubs/sp/800/230/ipd) | Additional SLH-DSA Parameter Sets for Limited Signature Use Cases | 13 Apr 2026 | Initial public draft |
+| [NIST IR 8547](https://csrc.nist.gov/pubs/ir/8547/ipd) | Transition to Post-Quantum Cryptography Standards | 12 Nov 2024 | Initial public draft |
+| [NIST IR 8528](https://csrc.nist.gov/pubs/ir/8528/final) | Status Report on the First Round of the Additional Digital Signature Schemes | 24 Oct 2024 | Final |
+| [NIST IR 8610](https://csrc.nist.gov/pubs/ir/8610/final) | Status Report on the Second Round of the Additional Digital Signature Schemes | 14 May 2026 | Final |
+| [NIST IR 8545](https://csrc.nist.gov/pubs/ir/8545/final) | Status Report on the Fourth Round of the NIST PQC Standardization Process (HQC) | 11 Mar 2025 | Final |
+| [SP 800-208](https://csrc.nist.gov/pubs/sp/800/208/final) | Recommendation for Stateful Hash-Based Signature Schemes (LMS, XMSS) | Oct 2020 | Final |
+| [SP 800-227](https://csrc.nist.gov/pubs/sp/800/227/final) | Recommendations for Key-Encapsulation Mechanisms | 18 Sep 2025 | Final |
 
 ## 🚀 Quick start
 
@@ -269,6 +379,9 @@ round-trip demo lives in `examples/demo`.
 - BLAKE3: [github.com/zeebo/blake3](https://github.com/zeebo/blake3) (CC0)
 - SPHINCS+ paper: [cryptojedi.org/papers/spx-20190923.pdf](https://cryptojedi.org/papers/spx-20190923.pdf)
 - SPHINCS+ reference code: [github.com/sphincs/sphincsplus](https://github.com/sphincs/sphincsplus)
+- NIST FIPS 205 (SLH-DSA): [csrc.nist.gov/pubs/fips/205/final](https://csrc.nist.gov/pubs/fips/205/final)
+- NIST PQC project: [csrc.nist.gov/projects/post-quantum-cryptography](https://csrc.nist.gov/projects/post-quantum-cryptography)
+- NIST additional digital signatures: [csrc.nist.gov/projects/pqc-dig-sig](https://csrc.nist.gov/projects/pqc-dig-sig)
 
 ## 👯 Sibling projects
 

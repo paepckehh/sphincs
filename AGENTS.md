@@ -61,7 +61,7 @@ go run ./examples/demo
 | `example_test.go` | Verified godoc example with fixed, reproducible output |
 | `bench_test.go` | `b.Loop()` benchmarks for key generation, signing, and verification |
 | `examples/demo/main.go` | Runnable round-trip demo used for README screenshots |
-| `docs/` | Theme-aware hero, established banner, and real-output terminal screenshots |
+| `docs/` | Theme-aware hero, established timeline banner, and real-output terminal screenshots |
 
 Constants are split by concern, not centralized: hypertree params in `core.go`,
 WOTS params in `wots.go`, HORST params in `horst.go`, hash sizes in `hash.go`,
@@ -129,6 +129,12 @@ and exported sizes/formulas in `api.go`.
   path. `wotsBaseW` is shared by signing and verification to prevent drift.
 - `Verify` derives the auth-path bit index from `subtreeHeight`
   (`leafidx&((1<<subtreeHeight)-1)`), not a hard-coded mask.
+- The README's "NIST post-quantum status" section is a dated snapshot (October
+  2026). When NIST publishes or finalizes a document, update that section, its
+  "current as of" date, and the primary-document table. Never describe this
+  library as SLH-DSA, FIPS 205 compliant, or wire-compatible with SPHINCS+.
+- The established banner states `4+ years` and `28+ tagged releases`. Refresh
+  those numbers (and the light/dark SVGs together) when the release line moves.
 
 ## Conventions
 
@@ -146,4 +152,4 @@ and exported sizes/formulas in `api.go`.
 Repository tags follow patch bumps of `v0.1.x`. Releases in the history are
 prepared by updating dependencies/`go.mod`, updating this file and `README.md`,
 committing, tagging `v0.1.<N+1>`, and pushing commits and tags to `origin`.
-The current release line is `v0.1.32`.
+The current release line is `v0.1.33`.
