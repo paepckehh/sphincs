@@ -157,4 +157,4 @@ and exported sizes/formulas in `api.go`.
 Repository tags follow patch bumps of `v0.1.x`. Releases in the history are
 prepared by updating dependencies/`go.mod`, updating this file and `README.md`,
 committing, tagging `v0.1.<N+1>`, and pushing commits and tags to `origin`.
-The current release line is `v0.1.36`.
+The current release line is `v0.1.37`.

@@ -421,6 +421,21 @@ round-trip demo lives in `examples/demo`.
 - NIST PQC project: [csrc.nist.gov/projects/post-quantum-cryptography](https://csrc.nist.gov/projects/post-quantum-cryptography)
 - NIST additional digital signatures: [csrc.nist.gov/projects/pqc-dig-sig](https://csrc.nist.gov/projects/pqc-dig-sig)
 
+## 🧬 Similar projects
+
+Implementations of the SPHINCS+ family, as opposed to this repository's
+independent hypertree design:
+
+- **C, reference implementation**, SPHINCS+ with SHA-2, SHAKE, and Haraka:
+  [github.com/sphincs/sphincsplus](https://github.com/sphincs/sphincsplus).
+  The code accompanying the NIST submission and the basis for FIPS 205
+  (SLH-DSA), still actively maintained.
+- **C++**, header-only SPHINCS+ over SHA-3/SHAKE, all NIST security levels in
+  simple and robust variants:
+  [github.com/itzmeanjan/sphincs-plus](https://github.com/itzmeanjan/sphincs-plus)
+  (formerly `itzmeanjan/sphincs`). C++20, BSD-3-Clause, tested with dudect for
+  timing leakage but not audited.
+
 ## 👯 Sibling projects
 
 Same author, same "small tool, sharp edges" philosophy:
