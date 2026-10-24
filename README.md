@@ -124,6 +124,27 @@ alongside ML-KEM.
   the standard in mainstream TLS and CMS tooling. BoringSSL, Botan, and liboqs
   also ship SLH-DSA implementations.
 
+### European guidance: BSI and ANSSI
+
+**Germany (BSI).** BSI TR-02102-1 (version 2026-01, 23 January 2026) keeps
+SLH-DSA among the recommended post-quantum signature schemes, next to ML-DSA and
+the stateful XMSS/LMS family. BSI does not endorse the full FIPS 205 menu: the
+128-bit sets are absent, leaving the 192- and 256-bit `s` and `f` variants at its
+roughly 120-bit-plus baseline, and post-quantum schemes are recommended only in
+hybrid combination with a classical scheme. The same revision sets Germany's
+first fixed sunset dates, ending standalone classical key agreement after 2031
+(2030 for the most sensitive uses) and classical-only signatures after 2035.
+
+**France (ANSSI).** ANSSI's PQC position papers (2022 and 2023) and its current
+PQC FAQ treat SLH-DSA as the conservative post-quantum signature option, fit for
+use cases that tolerate large signatures and slower signing. Hash-based
+signatures are the one explicit exception to ANSSI's otherwise mandatory
+hybridisation rule: SLH-DSA, XMSS, and LMS "could be used today without
+hybridation" because their security rests on the least-contested assumption,
+whereas ML-DSA still needs a classical co-signature. Elsewhere hybridisation
+remains the default, the regulated perimeter applies it strictly, and from 2027
+ANSSI intends to stop qualifying products that lack post-quantum cryptography.
+
 ### Security research worth watching
 
 - **SLasH-DSA** (arXiv:2509.13048, September 2025, revised February 2026)
