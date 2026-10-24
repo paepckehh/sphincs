@@ -101,6 +101,11 @@ and exported sizes/formulas in `api.go`.
 
 ## Gotchas
 
+- **Deterministic signing is intentional.** `Sign` has no salt or nonce and
+  produces identical signatures for identical key/message pairs. Callers that
+  need randomization MUST salt or domain-separate the message upstream; do not
+  add randomness or change the derivation inside this package. The README's
+  Security notes states this as a hard requirement.
 - **`hashSize` (32) is not `HashSize` (64).** `HashSize`/`MessageSize` describe
   the BLAKE3-512 message digest length; the internal chain/leaf hash size is 32
   bytes (`hashSize`). The README's "BLAKE3-512" refers to the message digest.
@@ -152,4 +157,4 @@ and exported sizes/formulas in `api.go`.
 Repository tags follow patch bumps of `v0.1.x`. Releases in the history are
 prepared by updating dependencies/`go.mod`, updating this file and `README.md`,
 committing, tagging `v0.1.<N+1>`, and pushing commits and tags to `origin`.
-The current release line is `v0.1.35`.
+The current release line is `v0.1.36`.

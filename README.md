@@ -343,12 +343,30 @@ obvious.
 
 ## 🔐 Security notes
 
+### ⚠️ Deterministic signing is intentional
+
+Determinism is a design property of this API, not an accident and not a tunable.
+`Sign` derives every one-time key, the leaf index, and `R` from the secret seed
+and the message, so the same key and message always produce byte-identical
+signatures. The library exposes no salt, nonce, or randomness parameter, and
+that is deliberate.
+
+If your use case requires randomized, hedged, or per-signature-unique
+signatures, you **MUST** handle that upstream of this package, for example by
+salting or domain-separating the 64-byte message with a fresh random value and
+including that value in the signed envelope. This is not the right place to add
+randomness: do not modify `Sign`, do not fork the derivation, and do not wrap
+the primitive in a way that changes what is actually signed.
+
+If you do not already understand the implications of deterministic signatures
+(repeatable signatures, cross-context linkability, fault attacks that can expose
+key material, and the need for caller-side uniqueness wherever the protocol
+demands it), **do not use this cryptographic primitive**.
+
 - **Experimental, not audited.** Treat this as a serious implementation, not a
   certified one.
-- **Deterministic signing.** There is no per-signature randomness. The same key
-  and message always produce the same signature. As with other deterministic
-  signature schemes, a faulty signing device that emits two different
-  signatures for the same input can leak key material.
+- **Deterministic signing.** See the warning above: no per-signature randomness,
+  and any salt or nonce belongs upstream of `Sign`.
 - **Fixed message size.** `Sign` and `Verify` accept exactly 64 bytes. Hash or
   frame longer messages before signing.
 - **Fixed-size keys.** The seed token must be generated with a CSPRNG and kept
