@@ -6,13 +6,23 @@ info:
 all: info
 
 build:
-	go build -v 
+	go build -v ./...
 
-deps: 
+test:
+	go test ./...
+
+vet:
+	go vet ./...
+
+fmt:
+	gofmt -w -s .
+
+check: fmt vet test
+
+lint:
+	staticcheck ./...
+
+deps:
 	rm go.mod go.sum
 	go mod init paepcke.de/$(PROJECT)
-	go mod tidy -v	
-
-check: 
-	gofmt -w -s .
-	staticcheck
+	go mod tidy -v

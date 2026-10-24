@@ -9,43 +9,41 @@ const (
 	hashC    = "expand 32-byte to 64-byte state!"
 )
 
-// hashVarlen ...
+// hashVarlen writes a 32-byte BLAKE3 digest of in to out.
 func hashVarlen(out, in []byte) {
 	tmp := blake3.Sum256(in)
-	copy(out[:], tmp[:])
-	for i := range tmp {
-		tmp[i] = '0'
-	}
+	copy(out, tmp[:])
+	clear(tmp[:])
 }
 
-// hashH2nn ...
+// hashH2nn hashes a 64-byte input to a 32-byte output with two permutations.
 func hashH2nn(out, in []byte) {
 	var x [64]byte
-	for i := 0; i < 32; i++ {
+	for i := range 32 {
 		x[i] = in[i]
 		x[i+32] = hashC[i]
 	}
 	chachaPermute(&x)
-	for i := 0; i < 32; i++ {
+	for i := range 32 {
 		x[i] ^= in[i+32]
 	}
 	chachaPermute(&x)
 	copy(out[:hashSize], x[:])
 }
 
-// hashH2nnMask ...
+// hashH2nnMask applies a mask to a 64-byte input before hashH2nn.
 func hashH2nnMask(out, in, mask []byte) {
 	var buf [2 * hashSize]byte
-	for i := 0; i < len(buf); i++ {
+	for i := range len(buf) {
 		buf[i] = in[i] ^ mask[i]
 	}
 	hashH2nn(out, buf[:])
 }
 
-// hashHnn ...
+// hashHnn hashes a 32-byte input to a 32-byte output with one permutation.
 func hashHnn(out, in []byte) {
 	var x [64]byte
-	for i := 0; i < 32; i++ {
+	for i := range 32 {
 		x[i] = in[i]
 		x[i+32] = hashC[i]
 	}
@@ -53,10 +51,10 @@ func hashHnn(out, in []byte) {
 	copy(out[:hashSize], x[:])
 }
 
-// hashHnnMask ...
+// hashHnnMask applies a mask to a 32-byte input before hashHnn.
 func hashHnnMask(out, in, mask []byte) {
 	var buf [hashSize]byte
-	for i := 0; i < len(buf); i++ {
+	for i := range len(buf) {
 		buf[i] = in[i] ^ mask[i]
 	}
 	hashHnn(out, buf[:])

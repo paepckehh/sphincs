@@ -3,24 +3,26 @@ package sphincs
 import "encoding/binary"
 
 const (
-	// nMasks has to be the max of (2*(subtreeHeight+wotsLogL)) and (wotsW-1) and 2*horstLogT
+	// nMasks has to be the max of (2*(subtreeHeight+wotsLogL)), (wotsW-1), and 2*horstLogT.
 	nMasks               = 2 * horstLogT
 	nLevels              = totalTreeHeight / subtreeHeight
 	subtreeHeight        = 5
 	totalTreeHeight      = 60
+	leafIndexBytes       = (totalTreeHeight + 7) / 8
+	leafIndexMask        = 1<<totalTreeHeight - 1
 	seedBytes            = 32
 	skRandSeedBytes      = 32
 	messageHashSeedBytes = 32
 )
 
-// leafaddr ...
+// leafaddr identifies a subtree leaf within the hypertree.
 type leafaddr struct {
 	level   int
 	subtree uint64
 	subleaf int
 }
 
-// generateSeed ...
+// generateSeed derives a subtree seed from the private seed and leaf address.
 func generateSeed(seed, sk []byte, a *leafaddr) {
 	var buffer [seedBytes + 8]byte
 	copy(buffer[0:seedBytes], sk[0:seedBytes])
@@ -31,10 +33,10 @@ func generateSeed(seed, sk []byte, a *leafaddr) {
 	hashVarlen(seed, buffer[:])
 }
 
-// lTree ...
+// lTree compresses a WOTS+ public key into a single leaf hash.
 func lTree(leaf, wotsPk, masks []byte) {
 	l := wotsL
-	for i := 0; i < wotsLogL; i++ {
+	for i := range wotsLogL {
 		for j := 0; j < l>>1; j++ {
 			hashH2nnMask(wotsPk[j*hashSize:], wotsPk[j*2*hashSize:], masks[i*2*hashSize:])
 		}
@@ -49,7 +51,7 @@ func lTree(leaf, wotsPk, masks []byte) {
 	copy(leaf[:hashSize], wotsPk[:])
 }
 
-// genLeafWots ...
+// genLeafWots generates the WOTS+ public key for one leaf and compresses it.
 func genLeafWots(leaf, masks, sk []byte, a *leafaddr) {
 	var seed [seedBytes]byte
 	var pk [wotsL * hashSize]byte
@@ -58,7 +60,7 @@ func genLeafWots(leaf, masks, sk []byte, a *leafaddr) {
 	lTree(leaf, pk[:], masks)
 }
 
-// treehash ...
+// treehash computes the root of a subtree with 2^height leaves.
 func treehash(node []byte, height int, sk []byte, leaf *leafaddr, masks []byte) {
 	a := *leaf
 	stack := make([]byte, (height+1)*hashSize)
@@ -79,7 +81,7 @@ func treehash(node []byte, height int, sk []byte, leaf *leafaddr, masks []byte) 
 	copy(node[0:hashSize], stack[0:hashSize])
 }
 
-// validateAuthpath ...
+// validateAuthpath recomputes a subtree root from a leaf and authentication path.
 func validateAuthpath(root, leaf *[hashSize]byte, leafidx uint, authpath, masks []byte, height uint) {
 	var buffer [2 * hashSize]byte
 	switch {
@@ -106,7 +108,7 @@ func validateAuthpath(root, leaf *[hashSize]byte, leafidx uint, authpath, masks 
 	hashH2nnMask(root[:], buffer[:], masks[2*(wotsLogL+height-1)*hashSize:])
 }
 
-// computeAuthpathWots ...
+// computeAuthpathWots builds the authentication path for one WOTS+ leaf.
 func computeAuthpathWots(root *[hashSize]byte, authpath []byte, a *leafaddr, sk, masks []byte, height uint) {
 	ta := *a
 	var tree [2 * (1 << subtreeHeight) * hashSize]byte
@@ -130,19 +132,10 @@ func computeAuthpathWots(root *[hashSize]byte, authpath []byte, a *leafaddr, sk,
 		level++
 	}
 	idx := a.subleaf
-	for i := uint(0); i < height; i++ {
+	for i := range height {
 		dst := authpath[i*hashSize : (i+1)*hashSize]
 		src := tree[((1<<subtreeHeight)>>i)*hashSize+((idx>>i)^1)*hashSize:]
 		copy(dst[:], src[:])
 	}
 	copy(root[:], tree[hashSize:])
-}
-
-// multiSliceAppend ...
-func multiSliceAppend(in ...[]byte) []byte {
-	var out []byte
-	for _, t := range in {
-		out = append(out, t...)
-	}
-	return out
 }

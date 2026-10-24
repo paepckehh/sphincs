@@ -1,29 +1,30 @@
-// Package sphincs provides hashbased hypertree post-quantum secure signatures
+// Package sphincs provides stateless hash-based (hypertree) post-quantum signatures.
 package sphincs
 
 import (
 	"crypto/subtle"
 	"encoding/binary"
+	"slices"
 
 	"github.com/zeebo/blake3"
 )
 
 const (
-	// PublicKeySize is the length of a SPHINCS-256 public key in bytes.
+	// PublicKeySize is the length of a public key in bytes.
 	PublicKeySize = (nMasks + 1) * hashSize
-	// PrivateKeySize is the length of a SPHINCS-256 private key in bytes.
+	// PrivateKeySize is the length of a private key in bytes.
 	PrivateKeySize = seedBytes + PublicKeySize - hashSize + skRandSeedBytes
-	// SignatureSize is the length of a SPHINCS-256 signature in bytes.
-	SignatureSize = 32 + (totalTreeHeight+7)/8 + horstSigBytes + (nLevels)*wotsSigBytes + totalTreeHeight*hashSize
-	// SeedTokenSize
+	// SignatureSize is the length of a signature in bytes.
+	SignatureSize = messageHashSeedBytes + leafIndexBytes + horstSigBytes + nLevels*wotsSigBytes + totalTreeHeight*hashSize
+	// SeedTokenSize is the exact private-key-sized seed token consumed by GenerateKey.
 	SeedTokenSize = PrivateKeySize
-	// SignatureSize
+	// HashSize is the length of the BLAKE3-512 message digest in bytes.
 	HashSize = 64
-	// MessageSize
+	// MessageSize is the fixed message length accepted by Sign and Verify.
 	MessageSize = HashSize
 )
 
-// GenerateKey generates a public/private key pair
+// GenerateKey derives a public/private key pair from a private-key-sized seed token.
 func GenerateKey(psrnd [SeedTokenSize]byte) ([PublicKeySize]byte, [PrivateKeySize]byte) {
 	var publicKey [PublicKeySize]byte
 	privateKey := psrnd
@@ -47,25 +48,22 @@ func Sign(tsk [PrivateKeySize]byte, message [MessageSize]byte) [SignatureSize]by
 		mh      [MessageSize]byte
 	)
 
-	// Create leafidx deterministically.
+	// Derive the leaf index and R deterministically from the secret random seed.
 	{
-		// Shift scratch upwards for convinience.
 		scratch := sm[SignatureSize-skRandSeedBytes:]
-		copy(scratch[:skRandSeedBytes], tsk[PrivateKeySize-skRandSeedBytes:])
-		//
-		rnd := blake3.Sum512(append(scratch[:32], message[:]...))
-		leafidx = binary.LittleEndian.Uint64(rnd[0:]) & 0xfffffffffffffff
+		copy(scratch, tsk[PrivateKeySize-skRandSeedBytes:])
+		rnd := blake3.Sum512(slices.Concat(scratch[:skRandSeedBytes], message[:]))
+		leafidx = binary.LittleEndian.Uint64(rnd[0:]) & leafIndexMask
 		copy(r[:], rnd[16:])
-		// Prepare msgHash
+
+		// Recompute the public key and message hash.
 		scratch = sm[SignatureSize-messageHashSeedBytes-PublicKeySize:]
-		// Copy R.
-		copy(scratch[:], r[:])
-		// Construct and copy pk.
+		copy(scratch, r[:])
 		a := leafaddr{level: nLevels - 1, subtree: 0, subleaf: 0}
 		pk := scratch[messageHashSeedBytes:]
 		copy(pk[:nMasks*hashSize], tsk[seedBytes:])
 		treehash(pk[nMasks*hashSize:], subtreeHeight, tsk[:], &a, pk)
-		mh = blake3.Sum512(append(scratch[:messageHashSeedBytes+PublicKeySize], message[:]...))
+		mh = blake3.Sum512(slices.Concat(scratch[:messageHashSeedBytes+PublicKeySize], message[:]))
 	}
 
 	// Use unique value $d$ for HORST address.
@@ -74,14 +72,14 @@ func Sign(tsk [PrivateKeySize]byte, message [MessageSize]byte) [SignatureSize]by
 	copy(sigp[0:messageHashSeedBytes], r[:])
 	sigp = sigp[messageHashSeedBytes:]
 	copy(masks[:], tsk[seedBytes:])
-	for i := uint64(0); i < (totalTreeHeight+7)/8; i++ {
+	for i := range uint64(leafIndexBytes) {
 		sigp[i] = byte((leafidx >> (8 * i)) & 0xff)
 	}
-	sigp = sigp[(totalTreeHeight+7)/8:]
+	sigp = sigp[leafIndexBytes:]
 	generateSeed(seed[:], tsk[:], &a)
 	horstSign(sigp, &root, &seed, masks[:], mh[:])
 	sigp = sigp[horstSigBytes:]
-	for i := 0; i < nLevels; i++ {
+	for i := range nLevels {
 		a.level = i
 		generateSeed(seed[:], tsk[:], &a)
 		wotsSign(sigp, &root, &seed, masks[:])
@@ -91,14 +89,11 @@ func Sign(tsk [PrivateKeySize]byte, message [MessageSize]byte) [SignatureSize]by
 		a.subleaf = int(a.subtree & ((1 << subtreeHeight) - 1))
 		a.subtree >>= subtreeHeight
 	}
-	// wipe privkey
-	for i := range tsk {
-		tsk[i] = '0'
-	}
+	clear(tsk[:])
 	return sm
 }
 
-// Verify takes a public key, message and signature and returns true if the signature is valid.
+// Verify reports whether signature is valid for message under tpk.
 func Verify(tpk [PublicKeySize]byte, message [MessageSize]byte, signature [SignatureSize]byte) bool {
 	var (
 		leafidx uint64
@@ -106,26 +101,22 @@ func Verify(tpk [PublicKeySize]byte, message [MessageSize]byte, signature [Signa
 		pkhash  [hashSize]byte
 		root    [hashSize]byte
 	)
-	// message hash
-	mh := blake3.Sum512(multiSliceAppend(signature[:messageHashSeedBytes], tpk[:], message[:]))
-	// sig
-	sigp := signature[:]
-	sigp = sigp[messageHashSeedBytes:]
-	for i := uint64(0); i < (totalTreeHeight+7)/8; i++ {
+
+	mh := blake3.Sum512(slices.Concat(signature[:messageHashSeedBytes], tpk[:], message[:]))
+	sigp := signature[messageHashSeedBytes:]
+	for i := range uint64(leafIndexBytes) {
 		leafidx |= uint64(sigp[i]) << (8 * i)
 	}
-	// verify
-	horstVerify(root[:], sigp[(totalTreeHeight+7)/8:], tpk[:], mh[:])
-	sigp = sigp[(totalTreeHeight+7)/8:]
-	sigp = sigp[horstSigBytes:]
-	for i := 0; i < nLevels; i++ {
+
+	horstVerify(root[:], sigp[leafIndexBytes:], tpk[:], mh[:])
+	sigp = sigp[leafIndexBytes+horstSigBytes:]
+	for range nLevels {
 		wotsVerify(&wotsPk, sigp, &root, tpk[:])
 		sigp = sigp[wotsSigBytes:]
 		lTree(pkhash[:], wotsPk[:], tpk[:])
-		validateAuthpath(&root, &pkhash, uint(leafidx&0x1f), sigp, tpk[:], subtreeHeight)
-		leafidx >>= 5
+		validateAuthpath(&root, &pkhash, uint(leafidx&((1<<subtreeHeight)-1)), sigp, tpk[:], subtreeHeight)
+		leafidx >>= subtreeHeight
 		sigp = sigp[subtreeHeight*hashSize:]
 	}
-	tpkRewt := tpk[nMasks*hashSize:]
-	return subtle.ConstantTimeCompare(root[:], tpkRewt) == 1
+	return subtle.ConstantTimeCompare(root[:], tpk[nMasks*hashSize:]) == 1
 }

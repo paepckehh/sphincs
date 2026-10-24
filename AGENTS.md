@@ -15,24 +15,31 @@ hash/permutation construction unless the change is intentional and verified.
 
 ```sh
 make            # default target: prints the project name only (does not build)
-make build      # go build -v
-make check      # gofmt -w -s . followed by staticcheck
+make build      # go build -v ./...
+make check      # gofmt -w -s . then go vet ./... and go test ./...
+make test       # go test ./...
+make vet        # go vet ./...
+make fmt        # gofmt -w -s .
+make lint       # staticcheck ./... (optional; not part of check)
 make deps       # DESTRUCTIVE: deletes go.mod/go.sum and re-initializes the module
 
 go build ./...
 go vet ./...
 gofmt -l .
-staticcheck ./...
-go test ./...   # no test files currently exist in this repo
+go test ./...
+staticcheck ./... # optional
+go test -run '^$' -bench . -benchmem
 ```
 
 - `make check` rewrites files in place (`gofmt -w`), so run it before reviewing a diff.
 - `make deps` derives the module path from the current directory name
   (`paepcke.de/$(basename $(CURDIR))`). Running it outside a directory named
   `sphincs` silently changes the module path; do not run it casually.
-- The repo has no tests, no testdata, and no lint config file. Do not assume a
-  test harness exists; validate changes with `go build`, `go vet`, `staticcheck`,
-  and a temporary round-trip program (GenerateKey -> Sign -> Verify) if needed.
+- `sphincs_test.go` covers sizes, key derivation, sign/verify, tamper detection,
+  determinism, and WOTS base-w checksum encoding. `bench_test.go` provides
+  `b.Loop()` benchmarks for key generation, signing, and verification.
+- The package has no testdata and no lint config file. `staticcheck` is optional
+  because a locally installed binary may be older than the Go toolchain.
 
 ## Layout
 
@@ -40,12 +47,15 @@ go test ./...   # no test files currently exist in this repo
 | --- | --- |
 | `api.go` | Public API: exported sizes, `GenerateKey`, `Sign`, `Verify` |
 | `core.go` | Hypertree constants, `leafaddr`, seed derivation, tree hashing, auth-path computation/validation |
-| `wots.go` | WOTS+ chain/seed expansion, key generation, `wotsSign`, `wotsVerify` |
+| `wots.go` | WOTS+ chain/seed expansion, key generation, `wotsBaseW`, `wotsSign`, `wotsVerify` |
 | `horst.go` | HORST few-time signature (`horstSign`, `horstVerify`) and its tree |
 | `hash.go` | `hashVarlen` (BLAKE3-256), `hashH2nn`, `hashHnn` and masked variants |
 | `chacha.go` | 12-round ChaCha permutation, PRG/keystream helpers (`chachaPrg`, `keystreamBytes`) |
 | `permute.go` | Portable `chachaPermute` for uncommon architectures |
 | `permute_unaligned.go` | `unsafe` reinterpretation of `[64]byte` as `[16]uint32` |
+| `sphincs_test.go` | Round-trip, tamper, determinism, size, and checksum tests |
+| `bench_test.go` | `b.Loop()` benchmarks for key generation, signing, and verification |
+| `docs/` | Theme-aware hero and established SVGs used by `README.md` |
 
 Constants are split by concern, not centralized: hypertree params in `core.go`,
 WOTS params in `wots.go`, HORST params in `horst.go`, hash sizes in `hash.go`,
@@ -53,9 +63,10 @@ and exported sizes/formulas in `api.go`.
 
 ## Architecture and data flow
 
-- **Key generation** (`GenerateKey`): takes a fixed 96-byte seed token
-  (`SeedTokenSize == PrivateKeySize`, seed + random seed + root), hashes the
-  top subtree, and returns fixed-size arrays. No error return.
+- **Key generation** (`GenerateKey`): takes a fixed 1,088-byte seed token
+  (`SeedTokenSize == PrivateKeySize`: 32-byte master seed, 1,024 bytes of public
+  masks, 32-byte signing random seed), hashes the top subtree, and returns
+  fixed-size arrays. No error return.
 - **Signing** (`Sign`): deterministically derives the leaf index and `R` from
   BLAKE3(secret-random-seed || message), recomputes the public key root,
   derives the message hash, then emits HORST signature, then per-level WOTS
@@ -86,7 +97,7 @@ and exported sizes/formulas in `api.go`.
 
 - **`hashSize` (32) is not `HashSize` (64).** `HashSize`/`MessageSize` describe
   the BLAKE3-512 message digest length; the internal chain/leaf hash size is 32
-  bytes (`hashSize`). The README's "blake3-512" refers to the message digest.
+  bytes (`hashSize`). The README's "BLAKE3-512" refers to the message digest.
 - `hashVarlen` uses `blake3.Sum256`, while `Sign`/`Verify` use `blake3.Sum512`;
   this is intentional, not an inconsistency to unify.
 - `chachaPermute`/`doRounds` is a 12-round permutation **without** the final
@@ -99,16 +110,19 @@ and exported sizes/formulas in `api.go`.
   on every call. `Sign` takes the private key by value and wipes only its local
   copy, so the caller's key is unchanged. Be careful when refactoring these
   signatures: they are the public ABI and callers rely on array sizes.
-- Some intermediates are overwritten with the byte `'0'` rather than zeroed
-  before return; this is best-effort wiping, not guaranteed constant-time
-  erasure. Avoid introducing data-dependent branches in hash/verify paths.
-- `go.mod` requires Go 1.27.2, while `.github/workflows/golang.yml` pins Go
-  1.24 with `CGO_ENABLED=0`. The CI matrix may not match the local toolchain;
-  do not "fix" a 1.24 CI failure by lowering language features without checking.
-- CI branch filters differ: `golang.yml` and `dependabot.yml` target `main`,
-  `codeql.yml` targets `master`. The default/working branch is `main`.
+- Private intermediates are cleared with `clear()` or best-effort wiping before
+  return. This is not a hard guarantee against copies made by the runtime or OS.
+  Avoid introducing data-dependent branches in hash/verify paths.
+- `go.mod` requires Go 1.27.2; CI uses `go-version-file: go.mod` so the toolchain
+  tracks the module instead of drifting. `CGO_ENABLED=0` is set in CI.
+- `golang.yml` and `codeql.yml` both target `main`. The default/working branch
+  is `main`.
 - Only `github.com/zeebo/blake3` is a direct dependency (`cpuid` is indirect).
   Prefer the standard library and avoid adding dependencies.
+- `wotsW` is a compile-time constant (16), so there is only one base-w encoding
+  path. `wotsBaseW` is shared by signing and verification to prevent drift.
+- `Verify` derives the auth-path bit index from `subtreeHeight`
+  (`leafidx&((1<<subtreeHeight)-1)`), not a hard-coded mask.
 
 ## Conventions
 
@@ -124,5 +138,6 @@ and exported sizes/formulas in `api.go`.
 ## Release
 
 Repository tags follow patch bumps of `v0.1.x`. Releases in the history are
-prepared by updating dependencies/`go.mod`, committing, tagging `v0.1.<N+1>`,
-and pushing commits and tags to `origin`.
+prepared by updating dependencies/`go.mod`, updating this file and `README.md`,
+committing, tagging `v0.1.<N+1>`, and pushing commits and tags to `origin`.
+The current release line is `v0.1.31`.

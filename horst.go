@@ -1,5 +1,7 @@
 package sphincs
 
+import "crypto/subtle"
+
 const (
 	horstSeedBytes = 32
 	horstLogT      = 16
@@ -9,20 +11,22 @@ const (
 	horstSigBytes  = 64*hashSize + (((horstLogT-6)*hashSize)+horstSkBytes)*horstK
 )
 
+// horstExpandSeed expands a HORST seed into horstT secret keys.
 func horstExpandSeed(outseeds []byte, inseed *[horstSeedBytes]byte) {
 	chachaPrg(outseeds[0:horstT*horstSkBytes], inseed[:])
 }
 
+// horstSign writes a HORST few-time signature and its public key.
 func horstSign(sig []byte, pk *[hashSize]byte, seed *[horstSeedBytes]byte, masks, mHash []byte) {
 	var sk [horstT * horstSkBytes]byte
 	sigpos := 0
 	horstExpandSeed(sk[:], seed)
 	var tree [(2*horstT - 1) * hashSize]byte
-	for i := 0; i < horstT; i++ {
+	for i := range horstT {
 		hashHnn(tree[(horstT-1+i)*hashSize:], sk[i*horstSkBytes:])
 	}
 	var offsetIn, offsetOut uint64
-	for i := uint(0); i < horstLogT; i++ {
+	for i := range uint(horstLogT) {
 		offsetIn = (1 << (horstLogT - i)) - 1
 		offsetOut = (1 << (horstLogT - i - 1)) - 1
 		for j := uint64(0); j < 1<<(horstLogT-i-1); j++ {
@@ -31,12 +35,12 @@ func horstSign(sig []byte, pk *[hashSize]byte, seed *[horstSeedBytes]byte, masks
 	}
 	copy(sig[0:64*hashSize], tree[63*hashSize:127*hashSize])
 	sigpos += 64 * hashSize
-	for i := 0; i < horstK; i++ {
+	for i := range horstK {
 		idx := uint(mHash[2*i]) + (uint(mHash[2*i+1]) << 8)
 		copy(sig[sigpos:sigpos+horstSkBytes], sk[idx*horstSkBytes:(idx+1)*horstSkBytes])
 		sigpos += horstSkBytes
 		idx += horstT - 1
-		for j := 0; j < horstLogT-6; j++ {
+		for range horstLogT - 6 {
 			switch {
 			case idx&1 != 0:
 				idx = idx + 1
@@ -51,11 +55,13 @@ func horstSign(sig []byte, pk *[hashSize]byte, seed *[horstSeedBytes]byte, masks
 	copy(pk[0:hashSize], tree[0:hashSize])
 }
 
-func horstVerify(pk, sig, masks, mHash []byte) int {
+// horstVerify recomputes the HORST public key from sig and mHash.
+// On failure it clears pk and returns early.
+func horstVerify(pk, sig, masks, mHash []byte) {
 	var buffer [32 * hashSize]byte
 	level10 := sig
 	sig = sig[64*hashSize:]
-	for i := 0; i < horstK; i++ {
+	for i := range horstK {
 		idx := uint(mHash[2*i]) + (uint(mHash[2*i+1]) << 8)
 		switch {
 		case idx&1 == 0:
@@ -80,30 +86,25 @@ func horstVerify(pk, sig, masks, mHash []byte) int {
 		}
 		idx = idx >> 1
 		hashH2nnMask(buffer[:], buffer[:], masks[2*(horstLogT-7)*hashSize:])
-		for k := uint(0); k < hashSize; k++ {
-			if level10[idx*hashSize+k] != buffer[k] {
-				for i := range pk[:hashSize] {
-					pk[i] = '0'
-				}
-				return -1
-			}
+		if subtle.ConstantTimeCompare(buffer[:hashSize], level10[idx*hashSize:(idx+1)*hashSize]) != 1 {
+			clear(pk[:hashSize])
+			return
 		}
 	}
-	for j := 0; j < 32; j++ {
+	for j := range 32 {
 		hashH2nnMask(buffer[j*hashSize:], level10[2*j*hashSize:], masks[2*(horstLogT-6)*hashSize:])
 	}
-	for j := 0; j < 16; j++ {
+	for j := range 16 {
 		hashH2nnMask(buffer[j*hashSize:], buffer[2*j*hashSize:], masks[2*(horstLogT-5)*hashSize:])
 	}
-	for j := 0; j < 8; j++ {
+	for j := range 8 {
 		hashH2nnMask(buffer[j*hashSize:], buffer[2*j*hashSize:], masks[2*(horstLogT-4)*hashSize:])
 	}
-	for j := 0; j < 4; j++ {
+	for j := range 4 {
 		hashH2nnMask(buffer[j*hashSize:], buffer[2*j*hashSize:], masks[2*(horstLogT-3)*hashSize:])
 	}
-	for j := 0; j < 2; j++ {
+	for j := range 2 {
 		hashH2nnMask(buffer[j*hashSize:], buffer[2*j*hashSize:], masks[2*(horstLogT-2)*hashSize:])
 	}
 	hashH2nnMask(pk, buffer[:], masks[2*(horstLogT-1)*hashSize:])
-	return 0
 }
