@@ -29,6 +29,7 @@ gofmt -l .
 go test ./...
 staticcheck ./... # optional
 go test -run '^$' -bench . -benchmem
+go run ./examples/demo
 ```
 
 - `make check` rewrites files in place (`gofmt -w`), so run it before reviewing a diff.
@@ -36,8 +37,11 @@ go test -run '^$' -bench . -benchmem
   (`paepcke.de/$(basename $(CURDIR))`). Running it outside a directory named
   `sphincs` silently changes the module path; do not run it casually.
 - `sphincs_test.go` covers sizes, key derivation, sign/verify, tamper detection,
-  determinism, and WOTS base-w checksum encoding. `bench_test.go` provides
-  `b.Loop()` benchmarks for key generation, signing, and verification.
+  determinism, and WOTS base-w checksum encoding. `example_test.go` is a verified
+  godoc example. `bench_test.go` provides `b.Loop()` benchmarks for key
+  generation, signing, and verification.
+- `examples/demo` is a runnable command that prints sizes, determinism, tamper
+  rejection, and timings. It is the source of `docs/screenshot-demo.svg`.
 - The package has no testdata and no lint config file. `staticcheck` is optional
   because a locally installed binary may be older than the Go toolchain.
 
@@ -54,8 +58,10 @@ go test -run '^$' -bench . -benchmem
 | `permute.go` | Portable `chachaPermute` for uncommon architectures |
 | `permute_unaligned.go` | `unsafe` reinterpretation of `[64]byte` as `[16]uint32` |
 | `sphincs_test.go` | Round-trip, tamper, determinism, size, and checksum tests |
+| `example_test.go` | Verified godoc example with fixed, reproducible output |
 | `bench_test.go` | `b.Loop()` benchmarks for key generation, signing, and verification |
-| `docs/` | Theme-aware hero and established SVGs used by `README.md` |
+| `examples/demo/main.go` | Runnable round-trip demo used for README screenshots |
+| `docs/` | Theme-aware hero, established banner, and real-output terminal screenshots |
 
 Constants are split by concern, not centralized: hypertree params in `core.go`,
 WOTS params in `wots.go`, HORST params in `horst.go`, hash sizes in `hash.go`,
@@ -126,8 +132,8 @@ and exported sizes/formulas in `api.go`.
 
 ## Conventions
 
-- Package name is `sphincs`; all files live in the repository root (no
-  subpackages, no `internal/`).
+- Package name is `sphincs`; library files live in the repository root (no
+  `internal/`). `examples/demo` is the only command subpackage.
 - Unexported helpers use camelCase (`hashH2nnMask`, `computeAuthpathWots`);
   exported API is minimal and documented with `// Name ...` comments.
 - Single-letter and short names (`n`, `l`, `mh`, `a`, `sk`) are idiomatic here
@@ -140,4 +146,4 @@ and exported sizes/formulas in `api.go`.
 Repository tags follow patch bumps of `v0.1.x`. Releases in the history are
 prepared by updating dependencies/`go.mod`, updating this file and `README.md`,
 committing, tagging `v0.1.<N+1>`, and pushing commits and tags to `origin`.
-The current release line is `v0.1.31`.
+The current release line is `v0.1.32`.

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" role="img" aria-labelledby="title desc">
+  <title id="title">Real terminal output of the sphincs test suite</title>
+  <desc id="desc">A dark terminal showing go test -v ./... with every test passing.</desc>
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#070d18"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1198" height="538" rx="18" fill="url(#shell)" stroke="#1e293b" stroke-width="2"/>
+  <path d="M1 44 H1199" stroke="#1e293b"/>
+  <path d="M1 45 H1199" stroke="url(#edge)" stroke-width="1.5"/>
+  <circle cx="26" cy="22" r="6" fill="#ff5f57"/>
+  <circle cx="48" cy="22" r="6" fill="#febc2e"/>
+  <circle cx="70" cy="22" r="6" fill="#28c840"/>
+  <text x="600" y="27" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" fill="#94a3b8">sphincs | go test -v ./...</text>
+  <g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="14">
+    <text x="30" y="76" fill="#34d399">$</text>
+    <text x="50" y="76" fill="#e2e8f0">go test -v ./...</text>
+
+    <text x="30" y="110" fill="#60a5fa">=== RUN   TestSizes</text>
+    <text x="30" y="131" fill="#34d399">--- PASS: TestSizes (0.00s)</text>
+    <text x="30" y="152" fill="#60a5fa">=== RUN   TestKeyDerivation</text>
+    <text x="30" y="173" fill="#34d399">--- PASS: TestKeyDerivation (0.01s)</text>
+    <text x="30" y="194" fill="#60a5fa">=== RUN   TestSignVerify</text>
+    <text x="30" y="215" fill="#93c5fd">=== RUN   TestSignVerify/tampered_message</text>
+    <text x="30" y="236" fill="#93c5fd">=== RUN   TestSignVerify/tampered_signature</text>
+    <text x="30" y="257" fill="#93c5fd">=== RUN   TestSignVerify/wrong_key</text>
+    <text x="30" y="278" fill="#34d399">--- PASS: TestSignVerify (0.09s)</text>
+    <text x="54" y="299" fill="#6ee7b7">    --- PASS: TestSignVerify/tampered_message (0.00s)</text>
+    <text x="54" y="320" fill="#6ee7b7">    --- PASS: TestSignVerify/tampered_signature (0.00s)</text>
+    <text x="54" y="341" fill="#6ee7b7">    --- PASS: TestSignVerify/wrong_key (0.00s)</text>
+    <text x="30" y="362" fill="#60a5fa">=== RUN   TestSignDeterministic</text>
+    <text x="30" y="383" fill="#34d399">--- PASS: TestSignDeterministic (0.21s)</text>
+    <text x="30" y="404" fill="#60a5fa">=== RUN   TestWotsBaseWChecksum</text>
+    <text x="30" y="425" fill="#34d399">--- PASS: TestWotsBaseWChecksum (0.00s)</text>
+    <text x="30" y="446" fill="#60a5fa">=== RUN   Example</text>
+    <text x="30" y="467" fill="#34d399">--- PASS: Example (0.14s)</text>
+    <text x="30" y="488" fill="#f8fafc" font-weight="700">PASS</text>
+    <text x="30" y="509" fill="#34d399">ok</text>
+    <text x="58" y="509" fill="#94a3b8">paepcke.de/sphincs</text>
+    <text x="1030" y="509" fill="#64748b">0.458s</text>
+  </g>
+</svg>

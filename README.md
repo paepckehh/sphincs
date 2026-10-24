@@ -85,10 +85,11 @@ func main() {
 }
 ```
 
-Install it or run it straight from the module cache:
+Install it, or run the deterministic demo straight from the repo:
 
 ```shell
 go get paepcke.de/sphincs@latest
+go run ./examples/demo
 ```
 
 ## 📦 Sizes
@@ -112,8 +113,8 @@ Informal benchmark on an Intel i5-12400T, Go 1.27.2, linux/amd64:
 | Operation | Time | Allocations |
 | :--- | ---: | ---: |
 | `GenerateKey` | ~3.9 ms | 34 |
-| `Sign` | ~70 ms | 437 |
-| `Verify` | ~0.73 ms | 1 |
+| `Sign` | ~66 ms | 435 |
+| `Verify` | ~0.81 ms | 1 |
 
 ```shell
 go test -run '^$' -bench . -benchmem
@@ -122,6 +123,33 @@ go test -run '^$' -bench . -benchmem
 Signing builds a fresh WOTS+ path for every level, so it does real work. It is
 still comfortably in interactive range. Verification only walks the supplied
 paths and usually lands well below one millisecond.
+
+## 🎬 Showtime
+
+Real output, captured from this repository. No mock-ups, no stock screenshots.
+
+<p align="center">
+  <img src="docs/screenshot-demo.svg" alt="Live sphincs round-trip: 1056-byte public key, 1088-byte private key, 41000-byte signature, deterministic signing, valid verification, and tamper rejection" width="100%">
+</p>
+<p align="center"><sub><b>One round-trip</b>: fixed sizes, deterministic signature, tampered message rejected.</sub></p>
+
+<p align="center">
+  <img src="docs/screenshot-tests.svg" alt="Real go test -v ./... output with sizes, key derivation, sign/verify, tamper, determinism, checksum, and example tests all passing" width="100%">
+</p>
+<p align="center"><sub><b>The whole suite, green</b>: round-trip, tamper detection, determinism, key derivation, checksum encoding.</sub></p>
+
+<p align="center">
+  <img src="docs/screenshot-bench.svg" alt="Real benchmark output for sphincs key generation, signing, and verification on an Intel i5-12400T" width="100%">
+</p>
+<p align="center"><sub><b>Real numbers</b>: key generation, signing, and sub-millisecond verification with allocation counts.</sub></p>
+
+Run the demo or reproduce the benchmarks yourself:
+
+```shell
+go run ./examples/demo
+go test -v ./...
+go test -run '^$' -bench . -benchmem
+```
 
 ## 🔬 How it works
 
@@ -226,8 +254,9 @@ make fmt            # gofmt -w -s .
 make lint           # staticcheck ./... (optional)
 ```
 
-The package has no subpackages, no generated code, and no build tags beyond the
-two architecture-specific permutation implementations.
+The library itself has no subpackages, no generated code, and no build tags
+beyond the two architecture-specific permutation implementations. The runnable
+round-trip demo lives in `examples/demo`.
 
 ## 📚 Docs and references
 
@@ -235,6 +264,7 @@ two architecture-specific permutation implementations.
 - Project home: [paepcke.de/sphincs](https://paepcke.de/sphincs/)
 - Hero artwork: [dark](docs/hero-dark.svg) / [light](docs/hero-light.svg)
 - Established banner: [dark](docs/established-dark.svg) / [light](docs/established-light.svg)
+- Screenshots: [round-trip](docs/screenshot-demo.svg) / [tests](docs/screenshot-tests.svg) / [benchmarks](docs/screenshot-bench.svg)
 - Original implementation: [github.com/yawning/sphincs256](https://github.com/yawning/sphincs256) (BSD-3-Clause)
 - BLAKE3: [github.com/zeebo/blake3](https://github.com/zeebo/blake3) (CC0)
 - SPHINCS+ paper: [cryptojedi.org/papers/spx-20190923.pdf](https://cryptojedi.org/papers/spx-20190923.pdf)

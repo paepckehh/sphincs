@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+  <title id="title">Real sphincs benchmark output</title>
+  <desc id="desc">A dark terminal showing key generation, signing, and verification benchmarks with allocation counts.</desc>
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#070d18"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1198" height="378" rx="18" fill="url(#shell)" stroke="#1e293b" stroke-width="2"/>
+  <path d="M1 44 H1199" stroke="#1e293b"/>
+  <path d="M1 45 H1199" stroke="url(#edge)" stroke-width="1.5"/>
+  <circle cx="26" cy="22" r="6" fill="#ff5f57"/>
+  <circle cx="48" cy="22" r="6" fill="#febc2e"/>
+  <circle cx="70" cy="22" r="6" fill="#28c840"/>
+  <text x="600" y="27" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" fill="#94a3b8">sphincs | go test -bench . -benchmem</text>
+  <g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="14">
+    <text x="30" y="76" fill="#34d399">$</text>
+    <text x="50" y="76" fill="#e2e8f0">go test -run '^$' -bench . -benchmem -benchtime=10x</text>
+
+    <text x="30" y="112" fill="#94a3b8">goos: linux</text>
+    <text x="30" y="136" fill="#94a3b8">goarch: amd64</text>
+    <text x="30" y="160" fill="#94a3b8">pkg: paepcke.de/sphincs</text>
+    <text x="30" y="184" fill="#94a3b8">cpu: 12th Gen Intel(R) Core(TM) i5-12400T</text>
+    <text x="30" y="216" fill="#67e8f9">BenchmarkGenerateKey-12</text>
+    <text x="500" y="216" fill="#e2e8f0">10</text>
+    <text x="570" y="216" fill="#fde047">3862442 ns/op</text>
+    <text x="790" y="216" fill="#a5b4fc">2288 B/op</text>
+    <text x="970" y="216" fill="#86efac">34 allocs/op</text>
+    <text x="30" y="244" fill="#67e8f9">BenchmarkSign-12</text>
+    <text x="500" y="244" fill="#e2e8f0">10</text>
+    <text x="570" y="244" fill="#fde047">66099248 ns/op</text>
+    <text x="790" y="244" fill="#a5b4fc">6320414 B/op</text>
+    <text x="970" y="244" fill="#86efac">435 allocs/op</text>
+    <text x="30" y="272" fill="#67e8f9">BenchmarkVerify-12</text>
+    <text x="500" y="272" fill="#e2e8f0">10</text>
+    <text x="570" y="272" fill="#fde047">809972 ns/op</text>
+    <text x="790" y="272" fill="#a5b4fc">1152 B/op</text>
+    <text x="970" y="272" fill="#86efac">1 allocs/op</text>
+
+    <text x="30" y="312" fill="#f8fafc" font-weight="700">PASS</text>
+    <text x="30" y="340" fill="#34d399">ok</text>
+    <text x="58" y="340" fill="#94a3b8">paepcke.de/sphincs</text>
+    <text x="1030" y="340" fill="#64748b">0.788s</text>
+  </g>
+</svg>

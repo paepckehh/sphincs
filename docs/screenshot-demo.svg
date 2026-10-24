@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">Real sphincs demo output</title>
+  <desc id="desc">A dark terminal showing fixed key and signature sizes, deterministic signing, successful verification, tamper rejection, and timings.</desc>
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#070d18"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="1" width="1198" height="428" rx="18" fill="url(#shell)" stroke="#1e293b" stroke-width="2"/>
+  <path d="M1 44 H1199" stroke="#1e293b"/>
+  <path d="M1 45 H1199" stroke="url(#edge)" stroke-width="1.5"/>
+  <circle cx="26" cy="22" r="6" fill="#ff5f57"/>
+  <circle cx="48" cy="22" r="6" fill="#febc2e"/>
+  <circle cx="70" cy="22" r="6" fill="#28c840"/>
+  <text x="600" y="27" text-anchor="middle" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="13" fill="#94a3b8">sphincs | live round-trip</text>
+  <g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace" font-size="15">
+    <text x="30" y="76" fill="#34d399">$</text>
+    <text x="50" y="76" fill="#e2e8f0">go run ./examples/demo</text>
+
+    <text x="30" y="112" fill="#f8fafc" font-weight="700">sphincs demo</text>
+    <text x="30" y="140" fill="#93c5fd">public key</text>
+    <text x="330" y="140" fill="#86efac">1056 bytes</text>
+    <text x="30" y="164" fill="#93c5fd">private key</text>
+    <text x="330" y="164" fill="#86efac">1088 bytes</text>
+    <text x="30" y="188" fill="#93c5fd">signature</text>
+    <text x="330" y="188" fill="#86efac">41000 bytes</text>
+    <text x="30" y="212" fill="#93c5fd">signature hash</text>
+    <text x="330" y="212" fill="#fde047">8c902824a809170e...</text>
+    <text x="30" y="236" fill="#93c5fd">deterministic</text>
+    <text x="330" y="236" fill="#86efac">true</text>
+    <text x="30" y="260" fill="#93c5fd">verify</text>
+    <text x="330" y="260" fill="#86efac">true</text>
+    <text x="30" y="284" fill="#93c5fd">tampered</text>
+    <text x="330" y="284" fill="#fca5a5">false</text>
+    <text x="30" y="308" fill="#93c5fd">keygen</text>
+    <text x="330" y="308" fill="#e2e8f0">3.826ms</text>
+    <text x="30" y="332" fill="#93c5fd">sign</text>
+    <text x="330" y="332" fill="#e2e8f0">75.97ms</text>
+    <text x="30" y="356" fill="#93c5fd">verify</text>
+    <text x="330" y="356" fill="#e2e8f0">911µs</text>
+
+    <text x="30" y="396" fill="#64748b"># fixed sizes, no state, no per-signature randomness</text>
+  </g>
+</svg>
