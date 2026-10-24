@@ -17,7 +17,6 @@ with a three-function API: `GenerateKey`, `Sign`, `Verify`.
 [![Go Report Card](https://goreportcard.com/badge/paepcke.de/sphincs)](https://goreportcard.com/report/paepcke.de/sphincs)
 [![Go Build](https://github.com/paepckehh/sphincs/actions/workflows/golang.yml/badge.svg)](https://github.com/paepckehh/sphincs/actions/workflows/golang.yml)
 [![License](https://img.shields.io/github/license/paepckehh/sphincs)](https://github.com/paepckehh/sphincs/blob/main/LICENSE)
-[![Release](https://img.shields.io/github/v/release/paepckehh/sphincs)](https://github.com/paepckehh/sphincs/releases/latest)
 [![Go Version](https://img.shields.io/badge/go-1.27.2-00ADD8)](https://go.dev/dl/)
 
 `go get paepcke.de/sphincs`
