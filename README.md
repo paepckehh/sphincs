@@ -166,8 +166,7 @@ ANSSI intends to stop qualifying products that lack post-quantum cryptography.
   derivation, fixed-size keys, and a hash-only security base remain the reasons
   hash-based signatures are the conservative post-quantum choice.
 - **Deterministic signing is a deliberate difference.** FIPS 205 feeds a
-  randomizer into signing; `sphincs` signs deterministically from the key and
-  message.
+  randomizer into signing; `sphincs` signs deterministically from the key and message.
 - **No fault countermeasures.** The Rowhammer results are a reminder that
   signature code running on shared hardware needs fault and side-channel
   hardening that this library does not claim to provide.
@@ -368,9 +367,9 @@ demands it), **do not use this cryptographic primitive**.
 - **Deterministic signing.** See the warning above: no per-signature randomness,
   and any salt or nonce belongs upstream of `Sign`.
 - **Fixed message size.** `Sign` and `Verify` accept exactly 64 bytes. Hash or
-  frame longer messages before signing.
-- **Fixed-size keys.** The seed token must be generated with a CSPRNG and kept
-  secret. It is not stretched from a passphrase.
+  longer messages before signing.
+- **Fixed-size keys.** The seed token should be generated with a CSPRNG and kept
+  secret.
 - **Best-effort wiping.** Local private material is cleared before return, but
   Go gives no hard guarantee against copies made by the runtime or the OS.
 - **Root comparison is constant-time.** Verification uses
@@ -410,9 +409,6 @@ round-trip demo lives in `examples/demo`.
 
 - API reference: [pkg.go.dev/paepcke.de/sphincs](https://pkg.go.dev/paepcke.de/sphincs)
 - Project home: [paepcke.de/sphincs](https://paepcke.de/sphincs/)
-- Hero artwork: [dark](docs/hero-dark.svg) / [light](docs/hero-light.svg)
-- Established banner: [dark](docs/established-dark.svg) / [light](docs/established-light.svg)
-- Screenshots: [round-trip](docs/screenshot-demo.svg) / [tests](docs/screenshot-tests.svg) / [benchmarks](docs/screenshot-bench.svg)
 - Original implementation: [github.com/yawning/sphincs256](https://github.com/yawning/sphincs256) (BSD-3-Clause)
 - BLAKE3: [github.com/zeebo/blake3](https://github.com/zeebo/blake3) (CC0)
 - SPHINCS+ paper: [cryptojedi.org/papers/spx-20190923.pdf](https://cryptojedi.org/papers/spx-20190923.pdf)
